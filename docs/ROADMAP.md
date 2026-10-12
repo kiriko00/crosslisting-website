@@ -62,6 +62,11 @@ Exit criteria:
 
 ## Stage 2 — Mock master-item and listing-creation workflow
 
+The initial six-step Create Listing demo is implemented. See
+`CREATE_LISTING_DEMO.md` for browser persistence, photo limits, and simulated
+marketplace behavior. Other stage 2 scope, including manual sale and delisting
+demonstrations, remains deferred to separate tasks.
+
 **Goal:** Validate the central master-first cross-listing workflow before adding
 persistence or external integrations.
 

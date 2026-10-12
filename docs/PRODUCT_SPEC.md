@@ -55,9 +55,10 @@ It contains the maximum useful reusable product information, such as:
 - Internal notes and tags
 - Inventory status and important dates
 
-The initial product assumes unique or single-quantity resale items. Quantity
-support can be considered later without weakening the one-master-to-many-listings
-relationship.
+The initial product primarily serves unique or single-quantity resale items.
+The Create Listing demo also collects a positive whole-number quantity, default
+1. Multi-unit sale reconciliation remains future work; this field does not
+introduce quantity synchronization or backend behavior.
 
 ### Marketplace listing
 
