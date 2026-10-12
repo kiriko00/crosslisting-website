@@ -1,26 +1,56 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --app: #f5f6f7;
+  --surface: #ffffff;
+  --surface-subtle: #f8f9fa;
+  --foreground: #202326;
+  --muted-foreground: #66707a;
+  --border: #e2e5e9;
+  --brand: #244f46;
+  --brand-hover: #1c4039;
+  --brand-subtle: #eaf1ef;
 }
 
 @theme inline {
-  --color-background: var(--background);
+  --color-app: var(--app);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
   --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-subtle: var(--brand-subtle);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--app);
 }
 
 body {
-  background: var(--background);
+  background: var(--app);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+button,
+a,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: #cfe0db;
+  color: #17332d;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0s !important;
+  }
 }
