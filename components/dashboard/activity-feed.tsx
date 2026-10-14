@@ -1,4 +1,5 @@
 import { Icon, type IconName } from "@/components/icons";
+import { MarketplaceIdentity } from "@/components/marketplace-identity";
 import { mockRecentActivity } from "@/lib/mock-data";
 import type { MockActivityKind } from "@/lib/types";
 
@@ -44,6 +45,7 @@ export function ActivityFeed() {
                 </div>
                 <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">
                   {activity.detail}
+                  {activity.marketplaceId ? <span className="mt-1 block"><MarketplaceIdentity id={activity.marketplaceId} compact /></span> : null}
                 </p>
               </div>
             </li>

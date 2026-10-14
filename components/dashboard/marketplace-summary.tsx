@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/icons";
+import { MarketplaceIdentity } from "@/components/marketplace-identity";
 import { mockMarketplaceSummaries } from "@/lib/mock-data";
 
 export function MarketplaceSummary() {
@@ -20,13 +21,10 @@ export function MarketplaceSummary() {
             key={marketplace.id}
             className="flex items-center gap-3 py-3"
           >
-            <span className="grid size-8 shrink-0 place-items-center rounded-md border border-border bg-surface-subtle text-xs font-semibold text-foreground">
-              {marketplace.abbreviation}
-            </span>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-medium text-foreground">
-                  {marketplace.name}
+                  <MarketplaceIdentity id={marketplace.marketplaceId} />
                 </p>
                 <span
                   className={`text-[11px] font-medium ${

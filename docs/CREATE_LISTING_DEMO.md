@@ -15,10 +15,13 @@ independent marketplace review, and final review.
   unavailable storage produces inline feedback and preserves current input.
 - Photos use temporary browser object URLs. They are not uploaded or saved in
   localStorage. Reselect photos after restoring a draft or refreshing the page.
-- The first photo is primary. Any photo can become primary; removing the primary
-  promotes the next photo. URLs are released on removal and unmount.
+- The first ordered photo is always the Preview photo. Drag a handle to reorder
+  with a mouse, pen, or touch. Arrow keys, Home/End, and Earlier/Later buttons
+  provide accessible alternatives. Order changes commit on drop; Escape or a
+  cancelled pointer interaction leaves the original order intact. Removing the
+  first photo promotes the next photo. URLs are released on removal and unmount.
 - Unsaved input and publish results are lost when leaving or refreshing the page.
-- Load example item replaces the form with a vintage jacket example, selecting
+- Load example item replaces the form with a concise vintage jeans example, selecting
   eBay, Depop, and Vinted. The user must supply local photos.
 
 ## Mock marketplace behavior
@@ -54,3 +57,15 @@ form data only; multi-unit inventory synchronization is not implemented.
 
 No dependencies, authentication, database, API routes, marketplace connectors,
 payments, or production services were added.
+
+## Field help and visual identity
+
+Required controls use red asterisks. Marketplace-specific required fields apply
+only to that destination and do not block continuing to the final review.
+Single-line inputs and selects share a 40px height. Field information buttons
+use native browser popovers, including click-outside and Escape dismissal.
+
+Marketplace names, local asset paths, demo integration labels, and fallback
+metadata are centralized in `lib/marketplaces.ts`. Shared identity components
+are used in selection, review, final results, and dashboard status/activity.
+See `public/marketplaces/README.md` for asset provenance and fallbacks.

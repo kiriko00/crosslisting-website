@@ -1,3 +1,5 @@
+import type { MarketplaceKey } from "./marketplaces";
+
 export type InventoryStatus = "Active" | "Draft" | "Sold";
 
 export type ListingStatus =
@@ -27,12 +29,13 @@ export interface MockInventoryItem {
   updatedAt: string;
   thumbnail: ProductThumbnailKind;
   attentionNote?: string;
+  attentionMarketplace?: MarketplaceKey;
+  saleMarketplace?: MarketplaceKey;
 }
 
 export interface MockMarketplaceSummary {
   id: string;
-  name: string;
-  abbreviation: string;
+  marketplaceId: MarketplaceKey;
   connectionLabel: "Simulated" | "Not configured";
   liveListings: number;
   attentionCount: number;
@@ -47,4 +50,5 @@ export interface MockActivity {
   title: string;
   detail: string;
   occurredAt: string;
+  marketplaceId?: MarketplaceKey;
 }

@@ -10,6 +10,7 @@ import { MarketplaceReview } from "./marketplace-review";
 import { FinalReview } from "./final-review";
 import { StepNavigation, steps } from "./step-navigation";
 import { primaryButton, secondaryButton } from "./form-fields";
+import { reorderPhotos } from "@/lib/listing/photo-order";
 import { emptyForm, exampleForm, marketplaces } from "@/lib/listing/config";
 import { loadBrowserDraft, saveBrowserDraft } from "@/lib/listing/draft-storage";
 import { marketplaceIssues, simulatePublish, validateDetails, validatePricing } from "@/lib/listing/validation";
@@ -59,8 +60,8 @@ export function ListingWorkflow() {
     setPhotos(previous => previous.filter(photo => photo.id !== id));
     clearFeedback();
   }
-  function makePrimary(id: string) {
-    setPhotos(previous => [...previous.filter(photo => photo.id === id), ...previous.filter(photo => photo.id !== id)]);
+  function movePhoto(sourceId: string, targetId: string) {
+    setPhotos(previous => reorderPhotos(previous, sourceId, targetId));
     clearFeedback();
   }
   function errorsForStep(index: number): FieldErrors {
@@ -108,10 +109,10 @@ export function ListingWorkflow() {
     <StepNavigation step={step} navigate={navigate} />
     {notice ? <p role="status" className="rounded-md border border-border bg-surface-subtle px-4 py-3 text-sm leading-6">{notice}</p> : null}
     <div ref={formRegion} tabIndex={-1} aria-label={`Step ${step + 1}: ${steps[step]}`} className="rounded-lg border border-border bg-surface p-4 focus:outline-none sm:p-6">
-      <p className="mb-4 text-xs font-medium text-muted-foreground">Step {step + 1} of {steps.length} · * Required</p>
+      <p className="mb-4 text-xs font-medium text-muted-foreground">Step {step + 1} of {steps.length} · <span className="text-red-600">*</span> Required</p>
       <form noValidate onSubmit={event => { event.preventDefault(); if (step < 5) navigate(step + 1); }}>
         {step === 0 ? <ItemDetails {...props} /> : null}
-        {step === 1 ? <PhotosSpecifics {...props} photos={photos} addPhotos={addPhotos} removePhoto={removePhoto} makePrimary={makePrimary} /> : null}
+        {step === 1 ? <PhotosSpecifics {...props} photos={photos} addPhotos={addPhotos} removePhoto={removePhoto} reorderPhotos={movePhoto} /> : null}
         {step === 2 ? <PricingShipping {...props} /> : null}
         {step === 3 ? <MarketplaceSelector drafts={form.marketplaces} toggle={id => updateDraft(id, { selected: !form.marketplaces[id].selected })} error={errors.marketplaces} /> : null}
         {step === 4 ? <MarketplaceReview form={form} photoCount={photos.length} updateDraft={updateDraft} /> : null}

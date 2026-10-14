@@ -44,7 +44,8 @@ export const mockInventoryItems: readonly MockInventoryItem[] = [
     listingSummary: "2 of 3 live",
     updatedAt: "12 min ago",
     thumbnail: "denim-jacket",
-    attentionNote: "Depop needs category review",
+    attentionNote: "Needs category review",
+    attentionMarketplace: "depop",
   },
   {
     id: "item-1047",
@@ -64,7 +65,8 @@ export const mockInventoryItems: readonly MockInventoryItem[] = [
     category: "Bags",
     size: "One size",
     status: "Sold",
-    listingSummary: "Sold via mock eBay",
+    listingSummary: "Sold via mock",
+    saleMarketplace: "ebay",
     updatedAt: "Yesterday",
     thumbnail: "leather-bag",
   },
@@ -96,8 +98,7 @@ export const mockInventoryItems: readonly MockInventoryItem[] = [
 export const mockMarketplaceSummaries: readonly MockMarketplaceSummary[] = [
   {
     id: "market-ebay",
-    name: "eBay",
-    abbreviation: "e",
+    marketplaceId: "ebay",
     connectionLabel: "Simulated",
     liveListings: 18,
     attentionCount: 1,
@@ -105,8 +106,7 @@ export const mockMarketplaceSummaries: readonly MockMarketplaceSummary[] = [
   },
   {
     id: "market-poshmark",
-    name: "Poshmark",
-    abbreviation: "P",
+    marketplaceId: "poshmark",
     connectionLabel: "Simulated",
     liveListings: 13,
     attentionCount: 2,
@@ -114,8 +114,7 @@ export const mockMarketplaceSummaries: readonly MockMarketplaceSummary[] = [
   },
   {
     id: "market-depop",
-    name: "Depop",
-    abbreviation: "D",
+    marketplaceId: "depop",
     connectionLabel: "Simulated",
     liveListings: 8,
     attentionCount: 2,
@@ -123,8 +122,7 @@ export const mockMarketplaceSummaries: readonly MockMarketplaceSummary[] = [
   },
   {
     id: "market-mercari",
-    name: "Mercari",
-    abbreviation: "M",
+    marketplaceId: "mercari",
     connectionLabel: "Not configured",
     liveListings: 0,
     attentionCount: 0,
@@ -137,7 +135,8 @@ export const mockRecentActivity: readonly MockActivity[] = [
     id: "activity-1",
     kind: "error",
     title: "Listing needs attention",
-    detail: "Vintage denim jacket · Depop category review",
+    detail: "Vintage denim jacket · Category review",
+    marketplaceId: "depop",
     occurredAt: "12 min ago",
   },
   {
@@ -151,14 +150,16 @@ export const mockRecentActivity: readonly MockActivity[] = [
     id: "activity-3",
     kind: "sale",
     title: "Mock sale recorded",
-    detail: "Coach Legacy leather crossbody bag · eBay",
+    detail: "Coach Legacy leather crossbody bag",
+    marketplaceId: "ebay",
     occurredAt: "Yesterday",
   },
   {
     id: "activity-4",
     kind: "listing",
     title: "Mock listing moved to Live",
-    detail: "Hermès printed silk scarf · Poshmark",
+    detail: "Hermès printed silk scarf",
+    marketplaceId: "poshmark",
     occurredAt: "Oct 4",
   },
 ];

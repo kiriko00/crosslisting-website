@@ -3,6 +3,16 @@ import { Icon } from "@/components/icons";
 import { ProductThumbnail } from "@/components/product-thumbnail";
 import { StatusBadge } from "@/components/status-badge";
 import { mockInventoryItems } from "@/lib/mock-data";
+import type { MockInventoryItem } from "@/lib/types";
+import { MarketplaceIdentity } from "@/components/marketplace-identity";
+
+function ListingSummary({ item }: { item: MockInventoryItem }) {
+  return <>{item.listingSummary}{item.saleMarketplace ? <> <MarketplaceIdentity id={item.saleMarketplace} compact /></> : null}</>;
+}
+
+function AttentionNote({ item }: { item: MockInventoryItem }) {
+  return <>{item.attentionMarketplace ? <><MarketplaceIdentity id={item.attentionMarketplace} compact /> · </> : null}{item.attentionNote}</>;
+}
 
 export function RecentInventory() {
   return (
@@ -60,12 +70,12 @@ export function RecentInventory() {
                 </td>
                 <td className="px-4 py-3 align-middle">
                   <p className="text-xs font-medium text-foreground">
-                    {item.listingSummary}
+                    <ListingSummary item={item} />
                   </p>
                   {item.attentionNote ? (
                     <p className="mt-1 flex items-center gap-1 text-[11px] text-amber-700">
                       <Icon name="error" className="size-3" />
-                      {item.attentionNote}
+                      <AttentionNote item={item} />
                     </p>
                   ) : (
                     <p className="mt-1 text-[11px] text-muted-foreground">
@@ -102,11 +112,11 @@ export function RecentInventory() {
                 <div className="mt-2 flex items-end justify-between gap-3">
                   <div>
                     <p className="text-xs font-medium text-foreground">
-                      {item.listingSummary}
+                      <ListingSummary item={item} />
                     </p>
                     {item.attentionNote ? (
                       <p className="mt-0.5 text-[11px] leading-4 text-amber-700">
-                        {item.attentionNote}
+                        <AttentionNote item={item} />
                       </p>
                     ) : null}
                   </div>

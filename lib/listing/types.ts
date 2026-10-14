@@ -1,6 +1,6 @@
 export const categories = ["Clothing", "Footwear", "Bags", "Jewelry", "Accessories"] as const;
 export type Category = (typeof categories)[number];
-export type MarketplaceId = "ebay" | "depop" | "vinted" | "etsy" | "poshmark" | "grailed" | "facebook";
+export type MarketplaceId = Exclude<import("../marketplaces").MarketplaceKey, "mercari">;
 export interface MasterItem {
   title: string;
   description: string;
