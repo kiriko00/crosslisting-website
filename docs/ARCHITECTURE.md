@@ -2,9 +2,11 @@
 
 ## Purpose and status
 
-This document describes the intended architecture conceptually. It guides domain
-boundaries and future implementation but does not authorize production
-infrastructure during the current mock-data stage.
+This document describes the domain boundaries and intended architecture.
+Supabase client utilities exist, and an initial PostgreSQL migration has been
+prepared for review. The migration has not been run. The application still uses
+mock data; this does not introduce database writes, authentication UI, Storage
+buckets, or marketplace integrations.
 
 The immediate application should keep data contracts and UI boundaries clear
 enough that mock repositories can later be replaced with real services without
@@ -44,7 +46,110 @@ In the current stage, typed mock data and in-memory behavior stand in for areas
 2–5. UI code should not pretend those substitutes provide persistence or real
 external communication.
 
-## Domain model
+## Initial PostgreSQL schema (not applied)
+
+The proposed schema lives in
+`supabase/migrations/20261022001313_initial_crosslisting_schema.sql`. It targets
+Supabase PostgreSQL 15 or later. Creating this file does not create remote
+tables, and no Supabase database connection is required to review it.
+
+```text
+auth.users                     Supabase's existing user accounts
+    |
+    +-- inventory_items        The seller's master physical items
+            |
+            +-- marketplace_listings   One row per item per marketplace
+            +-- item_photos            Ordered photo metadata
+            +-- sales                  Simple sale records
+```
+
+`auth.users` already belongs to Supabase Auth; this migration does not create or
+modify that table. Each `inventory_items.user_id` points to its owner's account.
+Each child table uses `item_id` to point back to the physical inventory item.
+For example, one vintage jacket can have separate eBay, Depop, and Vinted listing
+rows while remaining one master item. Those rows have independent statuses and
+overrides. A unique constraint permits at most one listing for the same item and
+marketplace, including draft or delisted listings; relisting reuses that row.
+
+### Table responsibilities
+
+- **inventory_items:** canonical product details, free-form measurements, status,
+  pricing, quantity, weight, and dates. A nonblank title and owner are required.
+  Other product fields may be NULL so drafts can be incomplete. The existing
+  workflow's required description/category/condition/price checks still apply
+  before publishing; database nullability does not declare a listing ready.
+  Quantity defaults to 1 and must be positive. Monetary amounts are finite,
+  non-negative `numeric(12, 2)` values using the current UI's USD convention.
+  Optional weight is a positive `numeric(12, 3)` value measured in pounds.
+- **marketplace_listings:** the item's selected marketplace, independent status,
+  external listing reference, overrides, and readiness/error information. A NULL
+  override inherits the master value. `missing_fields` is a text array of field
+  identifiers, while `marketplace_specifics` is a JSON object for values such as
+  parcel size. Neither is a credential store. Credentials, OAuth tokens, and
+  passwords are excluded from the schema.
+- **item_photos:** a Storage path and non-negative order number for each photo.
+  No binary images are stored in PostgreSQL. The lowest order number is the
+  Preview photo. Duplicate order numbers within one item are forbidden; a
+  future transactional reorder can defer that uniqueness check until commit.
+  There is no Storage bucket or upload implementation yet.
+- **sales:** a sale channel, amount, optional fees/shipping, and date for an item.
+  `marketplace_listing_id` is optional so a local or other off-platform sale can
+  be recorded. When present, a composite foreign key requires the listing to
+  belong to the same inventory item, preventing mismatched sale attribution.
+  This is operational sale history, not a full accounting ledger or a multi-unit
+  stock reconciliation system.
+
+All four tables use generated UUID primary keys and `timestamptz` dates. Item
+statuses are `draft`, `active`, `sold`, and `archived`. Listing statuses are
+`draft`, `ready`, `publishing`, `live`, `error`, `sold`, and `delisted`.
+
+### Mapping from the current form
+
+Future persistence code must map the UI's display categories and conditions to
+the migration's lowercase values (for example, `Clothing` to `clothing` and
+`New with tags` to `new_with_tags`). The UI ID `facebook` maps to the database
+value `facebook_marketplace`. Empty optional numeric fields become NULL rather
+than empty strings. No TypeScript mapping or application writes are added by
+this schema task. A browser draft with an empty title cannot yet be persisted
+as a database item, because the database requires a nonblank title.
+
+### Ownership, RLS, and Data API access
+
+Row Level Security is enabled on every application table. There are separate
+SELECT, INSERT, UPDATE, and DELETE policies, each explicitly restricted to the
+`authenticated` role. For inventory items, `auth.uid()` must match `user_id`.
+For children, an ownership check follows `item_id` back to the master item.
+UPDATE policies check both the current row and its proposed new parent/owner,
+so moving a row to someone else's inventory is also rejected.
+
+Grants and RLS do different jobs: grants let authenticated users reach these
+four tables through the Data API, while RLS limits which rows they can use.
+The migration explicitly grants schema usage and only SELECT, INSERT, UPDATE,
+and DELETE on these four tables. It removes public/anonymous table access and
+does not depend on automatic table exposure or a service-role client. No
+public-read policy is created. This does not turn on a disabled Data API or
+change the project's schema exposure settings.
+
+The owner lookup is indexed by `inventory_items.user_id`. The unique indexes on
+`(item_id, marketplace)` and `(item_id, sort_order)` also cover their item foreign
+keys, avoiding duplicate indexes. Sales has an item index and a partial index
+for non-null listing references to support ownership queries and safe deletion.
+
+### Deletion and timestamps
+
+Deleting a user cascades to their inventory items. Deleting an item cascades to
+its listings, photo metadata, and sales; there are no orphan application rows.
+Deleting only a marketplace listing retains the sale record and clears its
+optional listing reference, keeping `item_id` and the recorded sale channel.
+Removing photo metadata does not delete a future Storage object automatically;
+that file lifecycle remains deferred.
+
+A small invoker-rights trigger function updates `updated_at` for inventory items
+and marketplace listings. It uses an empty search path and has no direct
+public/anonymous/authenticated execute grant. There is no automatic sale event
+processing, delisting, or marketplace synchronization in this migration.
+
+## Conceptual domain model
 
 ### MasterInventoryItem
 
@@ -191,8 +296,9 @@ visible.
 
 ## Future authentication, database, and storage
 
-These are deferred from the current stage. When introduced, the architecture
-should include:
+Supabase is selected for the initial database foundation. Client factories and
+an unapplied schema migration are present; application persistence, authentication
+flows, and image storage remain deferred. The eventual architecture should include:
 
 - A supported authentication system with seller-scoped authorization.
 - A relational database for users, inventory items, marketplace listings,
@@ -206,8 +312,8 @@ should include:
 - Authenticated webhook endpoints with signature verification where supported.
 - Observability that avoids logging secrets or sensitive marketplace payloads.
 
-No specific vendor is selected by this document. Supabase or any other database,
-authentication, queue, or storage provider requires an explicit future decision.
+Queue execution, deployment practices, and other supporting services still
+require explicit future implementation decisions.
 
 ## Suggested application boundaries
 
