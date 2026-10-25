@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
 import { ItemDetails } from "./item-details";
 import { PhotosSpecifics } from "./photos-specifics";
@@ -12,17 +13,19 @@ import { StepNavigation, steps } from "./step-navigation";
 import { primaryButton, secondaryButton } from "./form-fields";
 import { reorderPhotos } from "@/lib/listing/photo-order";
 import { emptyForm, exampleForm, marketplaces } from "@/lib/listing/config";
-import { loadBrowserDraft, saveBrowserDraft } from "@/lib/listing/draft-storage";
-import { marketplaceIssues, simulatePublish, validateDetails, validatePricing } from "@/lib/listing/validation";
-import type { FieldErrors, ListingFormState, LocalPhoto, MarketplaceDraft, MarketplaceId, MasterItem, PublishResult } from "@/lib/listing/types";
+import { marketplaceIssues, validateDetails, validatePricing } from "@/lib/listing/validation";
+import type { FieldErrors, ListingFormState, LocalPhoto, MarketplaceDraft, MarketplaceId, MasterItem } from "@/lib/listing/types";
 
 export function ListingWorkflow() {
+  const router = useRouter();
   const [form, setForm] = useState<ListingFormState>(emptyForm);
   const [photos, setPhotos] = useState<LocalPhoto[]>([]);
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [notice, setNotice] = useState("");
-  const [results, setResults] = useState<PublishResult[] | null>(null);
+  const [busy, setBusy] = useState(false);
+  const saving = useRef(false);
+  const submissionId = useRef<string | null>(null);
   const objectUrls = useRef(new Set<string>());
   const formRegion = useRef<HTMLDivElement>(null);
 
@@ -31,7 +34,7 @@ export function ListingWorkflow() {
     return () => { for (const url of urls) URL.revokeObjectURL(url); urls.clear(); };
   }, []);
 
-  function clearFeedback() { setErrors({}); setResults(null); setNotice(""); }
+  function clearFeedback() { setErrors({}); setNotice(""); }
   function updateMaster(changes: Partial<MasterItem>) {
     setForm(previous => ({ ...previous, master: { ...previous.master, ...changes } }));
     clearFeedback();
@@ -49,7 +52,7 @@ export function ListingWorkflow() {
     const added = files.map(file => {
       const url = URL.createObjectURL(file);
       objectUrls.current.add(url);
-      return { id: crypto.randomUUID(), name: file.name, url };
+      return { id: crypto.randomUUID(), name: file.name, url, file };
     });
     setPhotos(previous => [...previous, ...added]);
     clearFeedback();
@@ -68,7 +71,7 @@ export function ListingWorkflow() {
     if (index === 0) return validateDetails(form.master);
     if (index === 1 && !photos.length) return { photos: "Choose at least one local photo to continue." };
     if (index === 2) return validatePricing(form.master);
-    if (index === 3 && !marketplaces.some(config => form.marketplaces[config.id].selected)) return { marketplaces: "Select at least one demo marketplace." };
+    if (index === 3 && !marketplaces.some(config => form.marketplaces[config.id].selected)) return { marketplaces: "Select at least one marketplace destination." };
     return {};
   }
   function navigate(target: number) {
@@ -85,26 +88,53 @@ export function ListingWorkflow() {
     setStep(target); setErrors({}); setNotice("");
     formRegion.current?.focus();
   }
-  function saveDraft() {
-    try { saveBrowserDraft(form); setNotice("Draft saved in this browser only. Photos are not saved; reselect them when restoring. This replaces any previous demo draft."); }
-    catch { setNotice("The browser could not save the draft. Your current form is still available here. Check browser storage permissions or available space."); }
-  }
-  function restoreDraft() {
+  async function save(mode: "draft" | "prepare") {
+    if (saving.current) return;
+    if (!form.master.title.trim()) { setStep(0); setErrors({ title: "A title is required to save a draft." }); setNotice("Add a title before saving."); return; }
+    if (mode === "prepare") {
+      for (let index = 0; index < 4; index++) {
+        const validation = errorsForStep(index);
+        if (Object.keys(validation).length) { setStep(index); setErrors(validation); setNotice("Review the required fields before preparing listings."); return; }
+      }
+    }
+    saving.current = true;
+    setBusy(true);
+    setNotice("Saving your item and uploading photos privately… Keep this page open.");
     try {
-      const saved = loadBrowserDraft();
-      if (!saved) { setNotice("No saved demo draft was found in this browser."); return; }
-      clearPhotos(); setForm(saved); setStep(0); setErrors({}); setResults(null);
-      setNotice("Browser draft restored. Reselect your photos before publishing. Unsaved changes were replaced.");
-    } catch { setNotice("The saved draft could not be restored. It may be invalid or browser storage may be unavailable. Your current form has been preserved."); }
+      submissionId.current ??= crypto.randomUUID();
+      const body = new FormData();
+      body.set("submissionId", submissionId.current);
+      body.set("mode", mode);
+      body.set("listing", JSON.stringify(form));
+      for (const photo of photos) {
+        if (!photo.file) throw new Error("Reselect your photos before saving.");
+        body.append("photos", photo.file);
+      }
+      const response = await fetch("/api/inventory", { method: "POST", body });
+      const result: unknown = await response.json();
+      if (!response.ok || !result || typeof result !== "object" || !("id" in result) || typeof result.id !== "string") {
+        throw new Error(result && typeof result === "object" && "error" in result && typeof result.error === "string" ? result.error : "The save could not be confirmed. Retry this same form.");
+      }
+      const warning = "warning" in result && result.warning === "cleanup" ? "&warning=cleanup" : "";
+      router.push(`/inventory/${result.id}?saved=1${warning}`);
+      router.refresh();
+      // Keep disabled until navigation completes, preventing a second save.
+      return;
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Save failed. Your form is preserved; please retry.");
+      saving.current = false;
+      setBusy(false);
+    }
   }
   const readyCount = marketplaces.filter(config => form.marketplaces[config.id].selected && !marketplaceIssues(form, config, photos.length).length).length;
   const props = { master: form.master, errors, update: updateMaster };
 
   return <div className="mx-auto max-w-[1200px] space-y-6">
     <PageHeader title="Create listing" description="Build one master item, then tailor its listings for each marketplace." />
+    <fieldset disabled={busy} className="min-w-0 space-y-6">
     <div className="flex flex-col gap-3 border-y border-border py-3 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-xs leading-5 text-muted-foreground"><span className="font-semibold text-foreground">Demo workflow.</span> Local photos and browser-only drafts. Publishing is simulated.</p>
-      <div className="flex shrink-0 gap-3"><button type="button" className="text-xs font-medium text-brand underline underline-offset-2" onClick={() => { setForm(exampleForm()); clearPhotos(); setStep(0); setErrors({}); setResults(null); setNotice("Example master item loaded. Choose local photos in step 2. Unsaved changes were replaced."); }}>Load example item</button><button type="button" className="text-xs font-medium text-brand underline underline-offset-2" onClick={restoreDraft}>Restore browser draft</button></div>
+      <p className="text-xs leading-5 text-muted-foreground"><span className="font-semibold text-foreground">Private inventory.</span> Save your item, photos, and marketplace settings to your account. External publishing is not available yet.</p>
+      <button type="button" className="shrink-0 text-xs font-medium text-brand underline underline-offset-2" onClick={() => { setForm(exampleForm()); clearPhotos(); setStep(0); setErrors({}); setNotice("Example fields loaded, not saved. Choose your own photos. Saving will create a real inventory item."); }}>Load example fields</button>
     </div>
     <StepNavigation step={step} navigate={navigate} />
     {notice ? <p role="status" className="rounded-md border border-border bg-surface-subtle px-4 py-3 text-sm leading-6">{notice}</p> : null}
@@ -116,16 +146,14 @@ export function ListingWorkflow() {
         {step === 2 ? <PricingShipping {...props} /> : null}
         {step === 3 ? <MarketplaceSelector drafts={form.marketplaces} toggle={id => updateDraft(id, { selected: !form.marketplaces[id].selected })} error={errors.marketplaces} /> : null}
         {step === 4 ? <MarketplaceReview form={form} photoCount={photos.length} updateDraft={updateDraft} /> : null}
-        {step === 5 ? <FinalReview form={form} photos={photos} results={results} /> : null}
+        {step === 5 ? <FinalReview form={form} photos={photos} /> : null}
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
           <button type="button" disabled={step === 0} className={secondaryButton} onClick={() => navigate(step - 1)}>Back</button>
-          <div className="flex flex-wrap gap-3"><button type="button" className={secondaryButton} onClick={saveDraft}>Save Draft</button>{step < 5 ? <button type="submit" className={primaryButton}>Continue</button> : <button type="button" className={primaryButton} disabled={!readyCount || results !== null} onClick={() => {
-            for (let index = 0; index < 4; index++) { const validation = errorsForStep(index); if (Object.keys(validation).length) { setStep(index); setErrors(validation); setNotice("Review the required master fields before publishing."); return; } }
-            setResults(simulatePublish(form, photos.length)); setNotice("");
-          }}>Publish Ready Listings (demo)</button>}</div>
+          <div className="flex flex-wrap gap-3"><button type="button" className={secondaryButton} onClick={() => save("draft")}>{busy ? "Saving…" : "Save draft"}</button>{step < 5 ? <button type="submit" className={primaryButton}>Continue</button> : <button type="button" className={primaryButton} disabled={!readyCount} onClick={() => save("prepare")}>Save & prepare listings</button>}</div>
         </div>
-        {step === 5 && !readyCount ? <p className="mt-3 text-xs text-amber-800">No marketplaces are ready. Go back to marketplace review to complete at least one listing.</p> : null}
+        {step === 5 && !readyCount ? <p className="mt-3 text-xs text-amber-800">No marketplaces are ready. Complete at least one listing, or save the incomplete item as a draft.</p> : null}
       </form>
     </div>
+    </fieldset>
   </div>;
 }

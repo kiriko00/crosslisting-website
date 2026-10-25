@@ -1,4 +1,4 @@
-import { dashboardMetrics } from "@/lib/mock-data";
+import type { getDashboardCounts } from "@/lib/inventory/queries";
 
 const valueStyles = {
   neutral: "text-foreground",
@@ -6,7 +6,13 @@ const valueStyles = {
   warning: "text-amber-700",
 };
 
-export function DashboardStats() {
+export function DashboardStats({ counts }: { counts: Awaited<ReturnType<typeof getDashboardCounts>> }) {
+  const dashboardMetrics: { label: string; value: number; detail: string; tone: keyof typeof valueStyles }[] = [
+    { label: "Active items", value: counts.active, detail: "Master items marked active", tone: "neutral" },
+    { label: "Draft items", value: counts.draft, detail: "Saved drafts in your inventory", tone: "neutral" },
+    { label: "Sold items", value: counts.sold, detail: "Master items marked sold", tone: "success" },
+    { label: "Listings needing attention", value: counts.attention, detail: "Errors or missing information", tone: "warning" },
+  ];
   return (
     <section aria-label="Inventory overview" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {dashboardMetrics.map((metric) => (

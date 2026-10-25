@@ -1,19 +1,19 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { exampleForm, marketplaces } from "./config";
-import { effectiveListing, marketplaceIssues, simulatePublish, validatePricing } from "./validation";
+import { effectiveListing, marketplaceIssues, evaluateListings, validatePricing } from "./validation";
 
-test("marketplace requirements remain independent and publishing skips incomplete destinations", () => {
+test("marketplace readiness is independent and never claims external publishing", () => {
   const form = exampleForm();
-  const results = simulatePublish(form, 1);
+  const results = evaluateListings(form, 1);
   assert.deepEqual(results.map(({ id, status }) => ({ id, status })), [
-    { id: "ebay", status: "Live" },
-    { id: "depop", status: "Live" },
+    { id: "ebay", status: "Ready" },
+    { id: "depop", status: "Ready" },
     { id: "vinted", status: "Draft" },
   ]);
   assert.deepEqual(results[2].issues, ["Parcel size is required"]);
   form.marketplaces.vinted.specifics.parcelSize = "Medium";
-  assert.equal(simulatePublish(form, 1)[2].status, "Live");
+  assert.equal(evaluateListings(form, 1)[2].status, "Ready");
 });
 
 test("overrides affect only one marketplace and restore resumes inheritance", () => {
@@ -38,9 +38,9 @@ test("an explicit empty override is invalid rather than silently inherited", () 
 
 test("photos are required and deselected marketplaces are excluded from results", () => {
   const form = exampleForm();
-  assert.ok(simulatePublish(form, 0).every(result => result.status === "Draft"));
+  assert.ok(evaluateListings(form, 0).every(result => result.status === "Draft"));
   form.marketplaces.depop.selected = false;
-  assert.ok(!simulatePublish(form, 1).some(result => result.id === "depop"));
+  assert.ok(!evaluateListings(form, 1).some(result => result.id === "depop"));
 });
 
 test("prices and quantities reject invalid values while optional costs may be empty", () => {

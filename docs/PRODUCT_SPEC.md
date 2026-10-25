@@ -209,7 +209,7 @@ selected or expected marketplace. It should explain whether the listing was
 never created, is incomplete, is blocked by a requirement, encountered an
 error, or was delisted.
 
-## Current implementation scope
+## Initial mock stage (historical)
 
 The first implementation stage uses mock data only. It may build realistic UI,
 navigation, filters, forms, validation demonstrations, and local in-memory
@@ -228,6 +228,27 @@ It must not add:
 eBay is the expected first priority for a real integration in a later stage.
 Other marketplaces should be integrated only when suitable official API access
 and authorization are available.
+
+## Current backend MVP boundary
+
+An explicitly approved Stage 3 milestone replaces mock inventory persistence
+with Supabase email/password authentication, cookie sessions, protected routes,
+private photo storage, real draft creation, owned Inventory/detail pages, and
+database-backed dashboard counts. See `BACKEND_SETUP.md` for deployment steps.
+The initial schema is reported applied by the project owner; new migrations
+are version-controlled but must be applied manually before using these features.
+
+Save Draft requires a nonblank title; other publish-time details may remain
+incomplete. Both save actions create a draft master item. Selected marketplace
+rows are independently Draft or Ready according to internal illustrative checks.
+Save & prepare listings requires complete common fields and at least one ready
+marketplace; another incomplete marketplace does not block the save.
+
+External publishing remains unavailable: no external IDs, fake Live transitions,
+marketplace OAuth, or API calls. Readiness rules remain illustrative until real
+official integrations exist. Marketplace connection displays are placeholders.
+Editing/resuming saved drafts, manual sale mutations, delisting, and advanced
+analytics are outside this milestone; Sold views reflect existing database rows.
 
 ## Product quality bar
 

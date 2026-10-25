@@ -1,6 +1,6 @@
 import type { MarketplaceKey } from "./marketplaces";
 
-export type InventoryStatus = "Active" | "Draft" | "Sold";
+export type InventoryStatus = "Active" | "Draft" | "Sold" | "Archived";
 
 export type ListingStatus =
   | "Draft"

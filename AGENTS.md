@@ -30,10 +30,18 @@ rules above intact.
 
 ## Current product boundary
 
-- The current implementation stage is an application shell backed by mock data.
+- The current milestone includes Supabase email/password authentication,
+  seller-owned inventory persistence, private photo storage, item details, and
+  database-backed dashboard metrics. See `docs/BACKEND_SETUP.md` for migrations,
+  deployment configuration, and outstanding verification.
 - Do not add authentication, a database, Supabase, marketplace APIs, payments,
   or production backend infrastructure unless a task explicitly advances the
   roadmap to that stage.
+- Preserve verified server-side identity checks, owner-scoped queries, and RLS.
+  Never use a service-role client to work around ownership failures. Do not apply
+  remote migrations or perform destructive remote operations without a request.
+- Marketplace integrations/publishing remain unimplemented. Internal Ready
+  listings must never be described as externally Live or published.
 - Clearly distinguish mock/demo behavior from real, persisted, or integrated
   functionality in both the UI and implementation notes. Never imply that a
   simulated publish, sale, sync, or delist operation reached a marketplace.

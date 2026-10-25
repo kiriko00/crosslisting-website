@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Icon, type IconName } from "@/components/icons";
+import { signOut } from "@/app/auth/actions";
 
 interface PrimaryLink {
   label: string;
@@ -67,7 +68,7 @@ function Brand() {
   );
 }
 
-function NavContent({ onNavigate }: { onNavigate?: () => void }) {
+function NavContent({ onNavigate, email }: { onNavigate?: () => void; email: string }) {
   const pathname = usePathname();
 
   return (
@@ -143,17 +144,19 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
 
       <div className="mt-auto border-t border-border pt-4">
         <div className="rounded-md bg-surface-subtle px-3 py-2.5">
-          <p className="text-xs font-medium text-foreground">Local mock data</p>
+          <p className="text-xs font-medium text-foreground">Private inventory</p>
           <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">
             No external marketplaces are connected.
           </p>
         </div>
+        <p className="mt-3 truncate px-3 text-xs text-muted-foreground" title={email}>{email}</p>
+        <form action={signOut} className="px-3 pt-2"><button className="min-h-9 text-xs font-medium text-brand underline underline-offset-2">Sign out</button></form>
       </div>
     </nav>
   );
 }
 
-export function SidebarNavigation() {
+export function SidebarNavigation({ email }: { email: string }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -162,7 +165,7 @@ export function SidebarNavigation() {
         <div className="mb-7 px-2">
           <Brand />
         </div>
-        <NavContent />
+        <NavContent email={email} />
       </aside>
 
       <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-surface px-4 lg:hidden">
@@ -198,7 +201,7 @@ export function SidebarNavigation() {
                 <Icon name="x" className="size-5" />
               </button>
             </div>
-            <NavContent onNavigate={() => setMobileOpen(false)} />
+            <NavContent email={email} onNavigate={() => setMobileOpen(false)} />
           </aside>
         </div>
       ) : null}

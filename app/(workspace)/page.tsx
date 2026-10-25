@@ -5,8 +5,10 @@ import { MarketplaceSummary } from "@/components/dashboard/marketplace-summary";
 import { RecentInventory } from "@/components/dashboard/recent-inventory";
 import { Icon } from "@/components/icons";
 import { PageHeader } from "@/components/page-header";
+import { getDashboardCounts, getInventory } from "@/lib/inventory/queries";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const [counts, { items }] = await Promise.all([getDashboardCounts(), getInventory(undefined, 1, 5, true)]);
   return (
     <div className="mx-auto w-full max-w-[1480px] space-y-6">
       <PageHeader
@@ -26,21 +28,21 @@ export default function DashboardPage() {
       <div className="flex items-start gap-3 rounded-md border border-sky-200 bg-sky-50 px-4 py-3 text-sky-900">
         <Icon name="spark" className="mt-0.5 size-4 shrink-0" />
         <div>
-          <p className="text-xs font-semibold">Demo workspace</p>
+          <p className="text-xs font-semibold">Your private inventory</p>
           <p className="mt-0.5 text-xs leading-5 text-sky-800">
-            All inventory, marketplace connections, listings, and activity shown
-            here are local mock data. No external accounts are connected.
+            Inventory, saved listing states, and counts come from your account.
+            Marketplace connections remain placeholders. Nothing is published externally.
           </p>
         </div>
       </div>
 
-      <DashboardStats />
+      <DashboardStats counts={counts} />
 
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.7fr)]">
-        <RecentInventory />
+        <RecentInventory items={items} />
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-1">
           <MarketplaceSummary />
-          <ActivityFeed />
+          <ActivityFeed items={items} />
         </div>
       </div>
     </div>

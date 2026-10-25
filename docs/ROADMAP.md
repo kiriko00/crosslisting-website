@@ -62,9 +62,10 @@ Exit criteria:
 
 ## Stage 2 — Mock master-item and listing-creation workflow
 
-The initial six-step Create Listing demo is implemented. See
-`CREATE_LISTING_DEMO.md` for browser persistence, photo limits, and simulated
-marketplace behavior. Other stage 2 scope, including manual sale and delisting
+The initial six-step Create Listing demo was implemented and its browser-only
+persistence has since been replaced in the first Stage 3 milestone. See
+`CREATE_LISTING_DEMO.md` for the current save/photo behavior. Other stage 2 scope,
+including manual sale and delisting
 demonstrations, remains deferred to separate tasks.
 
 **Goal:** Validate the central master-first cross-listing workflow before adding
@@ -99,6 +100,15 @@ Exit criteria:
 - The workflow has been reviewed for responsive and accessible use.
 
 ## Stage 3 — Persistence, authentication, and media foundation
+
+The first backend milestone is implemented in source: Supabase email/password
+sessions and route protection, private photo upload, atomic draft creation,
+owned Inventory/detail views, and real dashboard counts. The project owner
+reports the initial schema applied. The two new Storage/save migrations are not
+automatically applied. See `BACKEND_SETUP.md` for rollout and two-user checks.
+Source/build checks do not establish that a remote deployment is configured.
+Editing, manual sale mutations, account deletion/file cleanup automation,
+observability, concurrency-safe edits, and recovery operations remain follow-up.
 
 **Goal:** Replace mock persistence with secure seller-scoped application
 infrastructure.

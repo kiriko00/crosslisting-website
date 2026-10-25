@@ -30,6 +30,7 @@ export interface LocalPhoto {
   id: string;
   name: string;
   url: string;
+  file?: File;
 }
 export type OverrideField = "title" | "description" | "price";
 export interface MarketplaceDraft {
@@ -54,8 +55,8 @@ export interface MarketplaceConfig {
   description: string;
   requirements: MarketplaceRequirement[];
 }
-export interface PublishResult {
+export interface ReadinessResult {
   id: MarketplaceId;
-  status: "Live" | "Draft";
+  status: "Ready" | "Draft";
   issues: string[];
 }

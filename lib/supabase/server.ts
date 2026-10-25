@@ -1,11 +1,13 @@
+import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import type { Database } from "./database.types";
 
 export async function createClient() {
   const cookieStore = await cookies();
 
   // Create a fresh client for each request; never share server session state.
-  return createServerClient(
+  return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
@@ -19,8 +21,8 @@ export async function createClient() {
               cookieStore.set(name, value, options);
             });
           } catch {
-            // Server Components cannot write cookies. Session refresh must be
-            // handled by a future auth/proxy setup, which is not included here.
+            // Server Components cannot write cookies. The root proxy refreshes
+            // sessions before rendering; actions and handlers can write here.
           }
         },
       },

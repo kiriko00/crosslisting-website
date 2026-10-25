@@ -4,6 +4,7 @@ type Status = InventoryStatus | ListingStatus;
 
 const styles: Record<Status, string> = {
   Active: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  Archived: "border-slate-200 bg-slate-50 text-slate-600",
   Draft: "border-slate-200 bg-slate-50 text-slate-600",
   Ready: "border-sky-200 bg-sky-50 text-sky-700",
   Publishing: "border-blue-200 bg-blue-50 text-blue-700",

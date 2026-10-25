@@ -1,5 +1,5 @@
 import { marketplaces } from "./config";
-import type { FieldErrors, ListingFormState, MarketplaceConfig, MasterItem, PublishResult } from "./types";
+import type { FieldErrors, ListingFormState, MarketplaceConfig, MasterItem, ReadinessResult } from "./types";
 
 export function validMoney(value: string, optional = false): boolean {
   if (!value.trim()) return optional;
@@ -49,9 +49,9 @@ export function marketplaceIssues(form: ListingFormState, config: MarketplaceCon
   return issues;
 }
 
-export function simulatePublish(form: ListingFormState, photoCount: number): PublishResult[] {
+export function evaluateListings(form: ListingFormState, photoCount: number): ReadinessResult[] {
   return marketplaces.filter(({ id }) => form.marketplaces[id].selected).map((config) => {
     const issues = marketplaceIssues(form, config, photoCount);
-    return { id: config.id, status: issues.length ? "Draft" : "Live", issues };
+    return { id: config.id, status: issues.length ? "Draft" : "Ready", issues };
   });
 }

@@ -16,7 +16,7 @@ export function PhotosSpecifics({ master, update, errors, photos, addPhotos, rem
   const [fileError, setFileError] = useState("");
   return (
     <div className="space-y-8">
-      <FormSection title="Photos" required description="Up to 12 JPEG, PNG, or WebP images, 10 MB each. Local previews only; nothing is uploaded.">
+      <FormSection title="Photos" required description="Up to 12 JPEG, PNG, or WebP images, 10 MB each. Previews stay local until you save; photos are then uploaded privately.">
         <label className={`${secondaryButton} cursor-pointer gap-2 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand`}>
           Choose local photos
           <input className="sr-only" type="file" required={!photos.length} aria-label="Choose local photos" accept="image/jpeg,image/png,image/webp" multiple onChange={event => {

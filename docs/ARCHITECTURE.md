@@ -3,10 +3,12 @@
 ## Purpose and status
 
 This document describes the domain boundaries and intended architecture.
-Supabase client utilities exist, and an initial PostgreSQL migration has been
-prepared for review. The migration has not been run. The application still uses
-mock data; this does not introduce database writes, authentication UI, Storage
-buckets, or marketplace integrations.
+The project owner reports that the initial PostgreSQL schema has been applied.
+The first backend MVP now implements Supabase email/password sessions, protected
+routes, private photo uploads, atomic draft persistence, owned Inventory/detail
+pages, and live database dashboard metrics. New migrations are prepared but are
+not automatically run. Marketplace integrations remain unavailable. Deployment
+instructions and limitations are in `BACKEND_SETUP.md`.
 
 The immediate application should keep data contracts and UI boundaries clear
 enough that mock repositories can later be replaced with real services without
@@ -42,16 +44,17 @@ The future product can be understood as five cooperating areas:
 5. **Background processing** — retries, webhook handling, polling where
    officially supported, synchronization, and delisting jobs.
 
-In the current stage, typed mock data and in-memory behavior stand in for areas
-2–5. UI code should not pretend those substitutes provide persistence or real
-external communication.
+Inventory reads/writes and media use Supabase; marketplace connectors and
+background processing remain deferred. Marketplace readiness still uses
+illustrative local rules, not verified connector capabilities.
 
-## Initial PostgreSQL schema (not applied)
+## Initial PostgreSQL schema
 
 The proposed schema lives in
 `supabase/migrations/20261022001313_initial_crosslisting_schema.sql`. It targets
-Supabase PostgreSQL 15 or later. Creating this file does not create remote
-tables, and no Supabase database connection is required to review it.
+Supabase PostgreSQL 15 or later. Creating this file alone does not create remote
+tables. The project owner reports it applied successfully; this implementation
+does not reconnect to or reapply it.
 
 ```text
 auth.users                     Supabase's existing user accounts
@@ -91,7 +94,7 @@ marketplace, including draft or delisted listings; relisting reuses that row.
   No binary images are stored in PostgreSQL. The lowest order number is the
   Preview photo. Duplicate order numbers within one item are forbidden; a
   future transactional reorder can defer that uniqueness check until commit.
-  There is no Storage bucket or upload implementation yet.
+  The new private bucket and upload implementation are described below.
 - **sales:** a sale channel, amount, optional fees/shipping, and date for an item.
   `marketplace_listing_id` is optional so a local or other off-platform sale can
   be recorded. When present, a composite foreign key requires the listing to
@@ -105,12 +108,12 @@ statuses are `draft`, `active`, `sold`, and `archived`. Listing statuses are
 
 ### Mapping from the current form
 
-Future persistence code must map the UI's display categories and conditions to
+Persistence code maps the UI's display categories and conditions to
 the migration's lowercase values (for example, `Clothing` to `clothing` and
 `New with tags` to `new_with_tags`). The UI ID `facebook` maps to the database
 value `facebook_marketplace`. Empty optional numeric fields become NULL rather
-than empty strings. No TypeScript mapping or application writes are added by
-this schema task. A browser draft with an empty title cannot yet be persisted
+than empty strings. `lib/listing/submission.ts` validates and maps these fields
+on the server before saving. A draft with an empty title cannot be persisted
 as a database item, because the database requires a nonblank title.
 
 ### Ownership, RLS, and Data API access
@@ -150,6 +153,38 @@ public/anonymous/authenticated execute grant. There is no automatic sale event
 processing, delisting, or marketplace synchronization in this migration.
 
 ## Conceptual domain model
+
+### Backend MVP implementation
+
+- `app/(workspace)` groups personal pages under an authenticated shell without
+  changing their URLs. Root `proxy.ts` refreshes cookie sessions and redirects
+  unauthenticated page requests. Each data query and write separately verifies
+  identity with `getClaims()`; the layout/proxy is not the sole authorization.
+- `lib/supabase/database.types.ts` is a hand-maintained database contract. Clients
+  use the publishable key and user's session, never a service-role key.
+- `POST /api/inventory` checks same-origin requests, verified identity, bounded
+  form data, numeric/category/condition values, photo MIME types and signatures.
+  The server maps form values; user ownership never comes from submitted JSON.
+- The `item-photos` bucket is private, with a 10 MB image limit. Separate CRUD
+  policies use the first path segment: `USER_UUID/ITEM_UUID/random-name.ext`.
+  Upload/delete operations use Storage APIs, not table writes. Photo display uses
+  owner-authorized signed URLs valid for 15 minutes, never public bucket URLs.
+- An invoker-rights `create_inventory_item` RPC atomically inserts the master,
+  selected marketplace rows, and photo metadata. Existing RLS remains enforced.
+  A transaction-scoped lock and stable item UUID make concurrent retries
+  idempotent. It accepts only Draft/Ready listing states and generates no
+  external IDs. All newly saved master items remain Draft.
+- Storage is outside the database transaction. Upload failure triggers cleanup
+  before any item is created. A failed/ambiguous commit is checked against owned
+  item/photo rows before deleting unreferenced uploads, preventing loss of photos
+  from a save whose response was lost. Cleanup uncertainty is reported explicitly.
+- Inventory filters and dashboard counts use owner-scoped database reads.
+  Attention means a listing has an error or nonempty `missing_fields`. Recent
+  activity shows latest item update dates, not invented marketplace events or a
+  full audit trail. Marketplace connection displays remain placeholders.
+- Setup requires the two new SQL migrations to be applied by the project owner;
+  see `BACKEND_SETUP.md`. Saved-draft editing, sale mutations, automatic delisting,
+  and automated abandoned-file cleanup are not implemented.
 
 ### MasterInventoryItem
 
@@ -296,9 +331,9 @@ visible.
 
 ## Future authentication, database, and storage
 
-Supabase is selected for the initial database foundation. Client factories and
-an unapplied schema migration are present; application persistence, authentication
-flows, and image storage remain deferred. The eventual architecture should include:
+Supabase now provides the first authentication, inventory persistence, and
+private-media implementation. Further production hardening and supporting
+services remain future work. The eventual architecture should include:
 
 - A supported authentication system with seller-scoped authorization.
 - A relational database for users, inventory items, marketplace listings,
@@ -332,9 +367,9 @@ The exact folder structure should follow the installed Next.js version and can
 evolve with demonstrated complexity. Do not build speculative infrastructure
 before its roadmap stage.
 
-## Mock-stage architecture
+## Remaining mock boundaries
 
-For the application shell and early workflows:
+For future marketplace demonstrations and unimplemented workflows:
 
 - Use typed, deterministic mock records that reflect realistic domain states.
 - Include mixed listing statuses so Missing and Errors experiences can be built
@@ -344,5 +379,5 @@ For the application shell and early workflows:
 - Label simulated mutations and reset behavior clearly.
 - Do not add fake API delays or elaborate mock servers unless a task has a
   concrete interaction need.
-- Do not add credentials, external calls, authentication, database clients, or
-  production service abstractions prematurely.
+- Do not add marketplace credentials, external connector calls, or additional
+  production service abstractions without an explicit task.
