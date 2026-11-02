@@ -247,8 +247,19 @@ marketplace; another incomplete marketplace does not block the save.
 External publishing remains unavailable: no external IDs, fake Live transitions,
 marketplace OAuth, or API calls. Readiness rules remain illustrative until real
 official integrations exist. Marketplace connection displays are placeholders.
-Editing/resuming saved drafts, manual sale mutations, delisting, and advanced
-analytics are outside this milestone; Sold views reflect existing database rows.
+The lifecycle extension now supports editing/resuming saved items, archive,
+confirmed deletion with private-file cleanup, and manual whole-item sales.
+Sales, Live/Missing/Errors listings, and dashboard attention read real owned
+records. Intended destinations are stored separately so absent listing rows are
+detectable. Normal inventory excludes archived/deletion-pending records.
+
+Manual sales preserve other listing statuses and record required delisting work;
+neither Ready nor Live destinations are falsely marked externally Delisted.
+Connector availability is centrally configured, with eBay/Etsy as upcoming
+priorities, Depop partner access required, Vinted restricted, and no supported
+implemented Poshmark/Grailed/Facebook seller connector. See
+`INVENTORY_LIFECYCLE.md`. External calls, refunds/reopening sales, archive
+restoration, partial-unit reconciliation, and advanced analytics remain deferred.
 
 ## Product quality bar
 

@@ -5,6 +5,9 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 Before running this backend-enabled app, follow [Backend setup](docs/BACKEND_SETUP.md)
 for the owner-applied migrations, Supabase email/redirect configuration, and
 private Storage requirements. Marketplace publishing remains unavailable.
+For inventory editing, archive/delete, manual sales, and the connector foundation,
+also apply the separately reviewed migration in
+[Inventory lifecycle](docs/INVENTORY_LIFECYCLE.md).
 
 Then run the development server:
 

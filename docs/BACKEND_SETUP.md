@@ -1,5 +1,11 @@
 # Backend MVP setup and verification
 
+For the current inventory lifecycle extension (editing, archive/delete, manual
+sales, real Sales/Listings, connector contracts), also follow
+`INVENTORY_LIFECYCLE.md`. The existing backend milestone is reported working by
+the project owner; the lifecycle migration must be applied separately. The file
+list below records the original backend milestone, not the lifecycle extension.
+
 ## Deployment status
 
 The project owner reports the initial schema migration applied successfully.
@@ -88,9 +94,9 @@ overrides/readiness persistence, owned Inventory/detail queries, database counts
 and latest inventory update timestamps.
 
 Not implemented: marketplace accounts/APIs/publishing, verified marketplace
-requirements, editing/resuming saved drafts, manual sale/status mutations,
-delisting, payments, and a historical event/audit log. Sales and Listings pages
-outside Inventory remain placeholders. There are no fabricated marketplace
+requirements, external delisting, payments, and a historical event/audit log.
+The lifecycle extension replaces the former edit/sale/Listing placeholders.
+There are no fabricated marketplace
 sales, Live statuses, or external listing IDs. New master items remain Draft;
 Active/Sold counts can legitimately be zero until future lifecycle functionality
 or existing database data supplies those states.
@@ -99,8 +105,9 @@ or existing database data supplies those states.
 
 - A stable submission UUID is reused within a form instance. A database lock
   serializes concurrent calls with that UUID. Successful retries return the
-  existing item instead of inserting duplicates. Changed form data cannot
-  overwrite an already-saved item; editing is deferred. After uncertain failure,
+  existing item instead of inserting duplicates. A create retry cannot overwrite
+  an already-saved item; use the lifecycle edit route and its revision checks.
+  After uncertain failure,
   retry the same unchanged form, or check Inventory after refreshing.
 - Uploads precede the database RPC. Parent/listing/photo inserts form one
   transaction; failure leaves no partial database item. Failed uploads and
@@ -114,9 +121,10 @@ or existing database data supplies those states.
   administrator should compare candidate paths with `item_photos.storage_path`
   before removing confirmed unused files through the Storage dashboard/API.
   Never delete `storage.objects` rows directly or blindly delete a user's folder.
-- Existing item/user deletion cascades database metadata, not Storage files.
-  Deletion UI is deferred until that lifecycle is handled. Production account
-  deletion, backup/recovery, and observability remain follow-up work.
+- Foreign keys cascade database metadata, not Storage files. Lifecycle item
+  deletion now fences edits and performs Storage API cleanup before removing the
+  item. Account deletion outside the app, backup/recovery, and observability
+  remain follow-up work.
 - Photo URLs are signed for 15 minutes; treat them as private bearer links. Anyone
   given a signed URL can read that photo until expiry. Refresh for new URLs; do
   not log/share them. They are not public bucket URLs.

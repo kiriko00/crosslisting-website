@@ -1,6 +1,6 @@
 import { FormSection } from "./form-fields";
 import { MarketplaceIdentity } from "@/components/marketplace-identity";
-import { marketplaceIdentity } from "@/lib/marketplaces";
+import { connectorMetadata } from "@/lib/connectors/config";
 import { marketplaces } from "@/lib/listing/config";
 import type { MarketplaceDrafts, MarketplaceId } from "@/lib/listing/types";
 
@@ -12,7 +12,7 @@ export function MarketplaceSelector({ drafts, toggle, error }: { drafts: Marketp
       {marketplaces.map(config => <label key={config.id} className={`flex cursor-pointer items-center gap-3 px-3 py-4 ${drafts[config.id].selected ? "bg-brand-subtle/50" : "hover:bg-surface-subtle"}`}>
         <input type="checkbox" checked={drafts[config.id].selected} onChange={() => toggle(config.id)} className="size-4 shrink-0 accent-brand" />
         <span className="min-w-0 flex-1"><span className="block text-sm font-medium"><MarketplaceIdentity id={config.id} /></span><span className="block text-xs text-muted-foreground">{config.description}</span></span>
-        <span className="max-w-28 text-right text-xs text-muted-foreground">{marketplaceIdentity[config.id].integrationStatus}</span>
+        <span className="max-w-36 text-right text-xs text-muted-foreground">{connectorMetadata[config.id==="facebook"?"facebook_marketplace":config.id].availability} · Not connected</span>
       </label>)}
     </div>
   </FormSection>;

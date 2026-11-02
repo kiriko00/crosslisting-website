@@ -1,10 +1,4 @@
-import { PlaceholderPage } from "@/components/placeholder-page";
-
-export default function ListingErrorsPage() {
-  return (
-    <PlaceholderPage
-      title="Listing errors"
-      description="Review marketplace-specific validation and publishing issues that need attention."
-    />
-  );
+import { ListingsPageContent } from "@/components/inventory/listings-page";
+export default async function Page({searchParams}:{searchParams:Promise<{page?:string}>}) {
+  return <ListingsPageContent view="errors" pageValue={(await searchParams).page} />;
 }

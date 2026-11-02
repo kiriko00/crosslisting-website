@@ -1,10 +1,8 @@
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { connectorMetadata,connectorOrder } from "@/lib/connectors/config";
+import { marketplaceKey } from "@/lib/inventory/presentation";
+import { MarketplaceIdentity } from "@/components/marketplace-identity";
+import { PageHeader } from "@/components/page-header";
 
 export default function MarketplacesPage() {
-  return (
-    <PlaceholderPage
-      title="Marketplaces"
-      description="Review simulated marketplace availability and connection status. No external accounts are connected."
-    />
-  );
+  return <div className="mx-auto max-w-[1200px] space-y-6"><PageHeader title="Marketplaces" description="Official connector availability and access requirements. eBay and Etsy are the primary upcoming integrations. No marketplace account is connected." /><div className="divide-y divide-border rounded-lg border border-border bg-surface">{connectorOrder.map(key=>{const meta=connectorMetadata[key];return <section key={key} className="space-y-3 p-5"><div className="flex flex-wrap justify-between gap-3"><h2 className="text-sm font-semibold"><MarketplaceIdentity id={marketplaceKey(key)} />{meta.priority?<span className="ml-3 text-xs font-normal text-brand">Upcoming priority</span>:null}</h2><p className="text-xs font-medium">{meta.availability} · Not connected</p></div><p className="text-sm leading-6 text-muted-foreground">{meta.description}</p><p className="text-xs text-muted-foreground">Implemented capabilities: None.{meta.planned.length?` Potential scope after access review: ${meta.planned.join(", ")}.`:" No implementation planned without supported official access."}</p>{meta.documentation?<a href={meta.documentation} target="_blank" rel="noreferrer" className="inline-block text-xs font-medium text-brand underline">Official documentation ↗</a>:null}<p className="text-xs text-muted-foreground">Connection, publishing, and synchronization controls are unavailable.</p></section>;})}</div></div>;
 }

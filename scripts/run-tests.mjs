@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 // Compile pure TypeScript tests without a runner dependency or Supabase access.
 const root = fileURLToPath(new URL("../", import.meta.url));
 const output = mkdtempSync(join(tmpdir(), "crosslisting-tests-"));
-const tests = ["auth/redirect", "listing/submission", "listing/persist", "listing/multipart", "listing/photo-order", "listing/validation"];
+const tests = ["auth/redirect", "listing/submission", "listing/persist", "listing/multipart", "listing/photo-order", "listing/validation", "inventory/lifecycle", "connectors/delisting"];
 try {
   const compile = spawnSync(process.execPath, [
     resolve(root, "node_modules/typescript/bin/tsc"),

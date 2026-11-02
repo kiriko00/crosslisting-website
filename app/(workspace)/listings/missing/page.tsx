@@ -1,10 +1,4 @@
-import { PlaceholderPage } from "@/components/placeholder-page";
-
-export default function MissingListingsPage() {
-  return (
-    <PlaceholderPage
-      title="Missing listings"
-      description="Find inventory items that are absent from a selected or expected marketplace."
-    />
-  );
+import { ListingsPageContent } from "@/components/inventory/listings-page";
+export default async function Page({searchParams}:{searchParams:Promise<{page?:string}>}) {
+  return <ListingsPageContent view="missing" pageValue={(await searchParams).page} />;
 }

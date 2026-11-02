@@ -31,6 +31,7 @@ export interface LocalPhoto {
   name: string;
   url: string;
   file?: File;
+  storagePath?: string;
 }
 export type OverrideField = "title" | "description" | "price";
 export interface MarketplaceDraft {

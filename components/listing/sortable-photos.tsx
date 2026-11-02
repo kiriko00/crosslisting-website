@@ -83,7 +83,7 @@ export function SortablePhotos({ photos, reorder, remove }: SortablePhotosProps)
                 <svg aria-hidden="true" className="size-4" viewBox="0 0 16 16" fill="currentColor">{[4, 8, 12].map(y => <g key={y}><circle cx="5" cy={y} r="1" /><circle cx="11" cy={y} r="1" /></g>)}</svg>
               </button>
             </div>
-            <div className="relative aspect-square bg-surface-subtle"><Image draggable={false} src={photo.url} alt={`Photo ${index + 1}: ${photo.name}`} fill unoptimized sizes="240px" className="object-contain" /></div>
+            <div className="relative aspect-square bg-surface-subtle">{photo.url ? <Image draggable={false} src={photo.url} alt={`Photo ${index + 1}: ${photo.name}`} fill unoptimized sizes="240px" className="object-contain" /> : <span className="grid h-full place-items-center text-xs text-muted-foreground">Photo temporarily unavailable</span>}</div>
             <div className="space-y-2 p-2.5">
               <p className="truncate text-xs text-muted-foreground" title={photo.name}>{photo.name}</p>
               <div className="flex gap-2">

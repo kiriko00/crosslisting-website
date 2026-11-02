@@ -107,8 +107,13 @@ owned Inventory/detail views, and real dashboard counts. The project owner
 reports the initial schema applied. The two new Storage/save migrations are not
 automatically applied. See `BACKEND_SETUP.md` for rollout and two-user checks.
 Source/build checks do not establish that a remote deployment is configured.
-Editing, manual sale mutations, account deletion/file cleanup automation,
-observability, concurrency-safe edits, and recovery operations remain follow-up.
+The lifecycle extension implements revision-checked shared-form edits, manual
+whole-item sales, archive, retryable permanent deletion, removed-photo cleanup
+jobs, real Sales/Listings views, connector metadata/interfaces, and a per-listing
+delisting service boundary. Its new migration is not automatically applied.
+See `INVENTORY_LIFECYCLE.md`. External adapters/workers, account deletion/file
+cleanup automation, refunds, archive restoration, observability, and full recovery
+operations remain follow-up.
 
 **Goal:** Replace mock persistence with secure seller-scoped application
 infrastructure.

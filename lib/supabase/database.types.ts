@@ -16,6 +16,8 @@ export type InventoryItem = {
   original_retail_price: number | null; purchase_cost: number | null;
   quantity: number; item_weight: number | null; shipping_notes: string | null;
   created_at: string; updated_at: string; sold_at: string | null;
+  revision: number; last_mutation_id: string | null; deletion_pending: boolean;
+  selected_marketplaces: Marketplace[];
 };
 export type MarketplaceListing = {
   id: string; item_id: string; marketplace: Marketplace; status: ListingStatus;
@@ -23,6 +25,8 @@ export type MarketplaceListing = {
   description_override: string | null; price_override: number | null;
   missing_fields: string[]; marketplace_specifics: Json; error_message: string | null;
   created_at: string; updated_at: string; published_at: string | null; sold_at: string | null;
+  delisting_status: "none" | "required" | "pending" | "succeeded" | "error";
+  delisting_error: string | null;
 };
 export type ItemPhoto = { id: string; item_id: string; storage_path: string; sort_order: number; created_at: string };
 export type Sale = {
@@ -45,6 +49,7 @@ export type Database = {
       marketplace_listings: Table<MarketplaceListing, "item_id" | "marketplace", Relation<"marketplace_listings_item_id_fkey">>;
       item_photos: Table<ItemPhoto, "item_id" | "storage_path" | "sort_order", Relation<"item_photos_item_id_fkey">>;
       sales: Table<Sale, "item_id" | "sale_channel" | "sale_price", Relation<"sales_item_id_fkey">>;
+      photo_cleanup_jobs: Table<{ id: string; user_id: string; item_id: string; storage_path: string; created_at: string }, "user_id" | "item_id" | "storage_path">;
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -52,6 +57,9 @@ export type Database = {
         Args: { p_id: string; p_master: Json; p_listings: Json; p_photos: Json };
         Returns: Json;
       };
+      update_inventory_item: { Args: { p_id: string; p_revision: number; p_mutation: string; p_master: Json; p_listings: Json; p_photos: Json }; Returns: Json };
+      record_inventory_sale: { Args: { p_id: string; p_sale_id: string; p_revision: number; p_sale: Json }; Returns: Json };
+      inventory_lifecycle: { Args: { p_id: string; p_revision: number; p_action: string }; Returns: Json };
     };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };

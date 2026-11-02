@@ -34,6 +34,11 @@ rules above intact.
   seller-owned inventory persistence, private photo storage, item details, and
   database-backed dashboard metrics. See `docs/BACKEND_SETUP.md` for migrations,
   deployment configuration, and outstanding verification.
+- The lifecycle extension adds shared-form edits, archive/delete, manual sales,
+  real Sales/Listings, connector contracts, and durable delisting requirements.
+  Read `docs/INVENTORY_LIFECYCLE.md` before changing these workflows. Preserve
+  revision checks, deletion fencing, and retryable photo-cleanup jobs. Never mark
+  a listing Delisted without genuine external confirmation.
 - Do not add authentication, a database, Supabase, marketplace APIs, payments,
   or production backend infrastructure unless a task explicitly advances the
   roadmap to that stage.

@@ -18,7 +18,8 @@ This filename is retained for existing documentation links. See
   independently as Draft or Ready; Ready is internal, not externally published.
 - Success redirects to `/inventory/[id]`. Failed saves keep the current form and
   show an error; there is no localStorage draft persistence or automatic import
-  of old browser-only drafts. Editing/resuming saved items is not implemented.
+  of old browser-only drafts. `/inventory/[id]/edit` now reuses this same workflow
+  for real updates; stored photos, selections, overrides, and specifics are loaded.
 - The stable submission ID and database lock prevent duplicate records from
   double-clicks, concurrent attempts, and retries in this form instance. If a
   response is uncertain, retry the same form before starting a new item. After a
@@ -60,6 +61,12 @@ must wait for future authorized integrations; do not describe Ready as Live.
   Supabase Storage APIs and the atomic save RPC.
 - `components/listing/`: existing workflow and reusable steps.
 
+Edits retain the same master/listing identities, recompute internal readiness,
+preserve historical/external listing states, and require the loaded revision.
+Removing photos queues durable Storage cleanup; failures leave a retry action.
+Destinations with external/sale/delisting history cannot silently be removed.
+See `INVENTORY_LIFECYCLE.md` for concurrency and lifecycle actions.
+
 Field help, compact styling, local marketplace assets, and accessible photo
-reordering remain unchanged. Multi-unit reconciliation, editing, sale mutations,
-payments, and marketplace APIs are outside this milestone.
+reordering remain unchanged. Multi-unit reconciliation, payments, and marketplace
+APIs remain outside scope. Manual whole-item sales are available on item details.

@@ -10,6 +10,12 @@ pages, and live database dashboard metrics. New migrations are prepared but are
 not automatically run. Marketplace integrations remain unavailable. Deployment
 instructions and limitations are in `BACKEND_SETUP.md`.
 
+The inventory lifecycle extension now adds shared-form edits, archive, fenced
+permanent deletion with Storage cleanup, manual sales, real Sales/Listings views,
+and connector capability/delisting boundaries. See `INVENTORY_LIFECYCLE.md` for
+the new unapplied migration, transaction rules, tests, and limitations. No real
+marketplace connector or automatic external delisting is implemented.
+
 The immediate application should keep data contracts and UI boundaries clear
 enough that mock repositories can later be replaced with real services without
 rewriting the product model.
@@ -144,8 +150,10 @@ Deleting a user cascades to their inventory items. Deleting an item cascades to
 its listings, photo metadata, and sales; there are no orphan application rows.
 Deleting only a marketplace listing retains the sale record and clears its
 optional listing reference, keeping `item_id` and the recorded sale channel.
-Removing photo metadata does not delete a future Storage object automatically;
-that file lifecycle remains deferred.
+Foreign keys alone do not remove Storage objects. The application now queues
+removed-photo cleanup and fences permanent deletion until owned files are removed
+through Storage APIs. Direct Auth-account deletion outside the app still requires
+separate file lifecycle handling; see `INVENTORY_LIFECYCLE.md`.
 
 A small invoker-rights trigger function updates `updated_at` for inventory items
 and marketplace listings. It uses an empty search path and has no direct
@@ -182,9 +190,11 @@ processing, delisting, or marketplace synchronization in this migration.
   Attention means a listing has an error or nonempty `missing_fields`. Recent
   activity shows latest item update dates, not invented marketplace events or a
   full audit trail. Marketplace connection displays remain placeholders.
-- Setup requires the two new SQL migrations to be applied by the project owner;
-  see `BACKEND_SETUP.md`. Saved-draft editing, sale mutations, automatic delisting,
-  and automated abandoned-file cleanup are not implemented.
+- Initial setup requires the first backend migrations described in
+  `BACKEND_SETUP.md`. The lifecycle migration adds transactional edits, manual
+  sales, explicit selections, revision checks, deletion fencing, and durable
+  removed-photo cleanup. Automatic external delisting and scheduled abandoned-file
+  cleanup remain unimplemented. See `INVENTORY_LIFECYCLE.md`.
 
 ### MasterInventoryItem
 
