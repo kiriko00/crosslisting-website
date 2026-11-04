@@ -2,7 +2,14 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+Before running this backend-enabled app, follow [Backend setup](docs/BACKEND_SETUP.md)
+for the owner-applied migrations, Supabase email/redirect configuration, and
+private Storage requirements. Marketplace publishing remains unavailable.
+For inventory editing, archive/delete, manual sales, and the connector foundation,
+also apply the separately reviewed migration in
+[Inventory lifecycle](docs/INVENTORY_LIFECYCLE.md).
+
+Then run the development server:
 
 ```bash
 npm run dev
@@ -16,7 +23,10 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The dashboard lives in `app/(workspace)/page.tsx`; the route group preserves its
+`/` URL while sharing an authenticated layout. Read `AGENTS.md` and relevant
+`docs/` before changing features. Run `npm test`, `npm run lint`, TypeScript
+validation, and a production build after meaningful changes.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
